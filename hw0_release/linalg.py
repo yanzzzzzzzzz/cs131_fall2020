@@ -16,7 +16,21 @@ def dot_product(a, b):
     """
     out = None
     ### YOUR CODE HERE
-    pass
+    x = a.shape[0]
+    n = a.shape[1]
+    if(x==1):
+        out = 0
+        for i in range(n):
+            out+=a[0,i] * b[i,0]
+        return out
+
+    out = np.zeros([x, x])
+    for i in range(x):
+        for j in range(x):
+            tmp = 0
+            for k in range(n):
+                tmp +=a[i, k] * b[j, k]
+                out[i, j] = tmp
     ### END YOUR CODE
     return out
 
@@ -37,7 +51,9 @@ def complicated_matrix_function(M, a, b):
     """
     out = None
     ### YOUR CODE HERE
-    pass
+    ab = dot_product(a, b)
+    MaT = dot_product(M, a.T)
+    out = dot_product(ab, MaT)
     ### END YOUR CODE
 
     return out
