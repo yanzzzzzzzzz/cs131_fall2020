@@ -18,19 +18,22 @@ def dot_product(a, b):
     ### YOUR CODE HERE
     x = a.shape[0]
     n = a.shape[1]
-    if(x==1):
-        out = 0
-        for i in range(n):
-            out+=a[0,i] * b[i,0]
-        return out
+    _n = b.shape[0]
+    _x = b.shape[1]
 
-    out = np.zeros([x, x])
-    for i in range(x):
-        for j in range(x):
-            tmp = 0
-            for k in range(n):
-                tmp +=a[i, k] * b[j, k]
-                out[i, j] = tmp
+        
+    if(x==1 and _x==1):
+        if(n==1):
+            return b * a[0,0]
+        else:
+            out = np.zeros([1,1])
+            out[0,0] = np.sum(a[0,:] * b[:,0])
+            return out
+    else:
+        out = np.zeros([x, _x])
+        for i in range(x):
+            for j in range(_x):
+                out[i, j] = np.sum(a[i,:] * b[:,j])
     ### END YOUR CODE
     return out
 
