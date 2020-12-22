@@ -27,8 +27,16 @@ def conv_nested(image, kernel):
     Hi, Wi = image.shape
     Hk, Wk = kernel.shape
     out = np.zeros((Hi, Wi))
-
     ### YOUR CODE HERE
+    for i in range(0, Hi):
+        for j in range(0, Wi):
+            for u in range(-int(Hk/2), int(Hk/2)+1):
+                for v in range(-int(Wk/2), int(Wk/2)+1):
+                    imgX = i - u
+                    imgY = j - v
+                    if(imgX<0 or imgY<0 or imgX>=Hi or imgY>=Wi):
+                        continue
+                    out[i,j] = out[i,j] + image[imgX, imgY] * kernel[u + int(Hk/2),v + int(Wk/2)]
     pass
     ### END YOUR CODE
 
@@ -53,9 +61,10 @@ def zero_pad(image, pad_height, pad_width):
     """
 
     H, W = image.shape
-    out = None
-
+    
     ### YOUR CODE HERE
+    out = np.zeros((H + 2 * pad_height, W + 2 * pad_width))
+    out[pad_height:pad_height + H, pad_width:pad_width + W] = image
     pass
     ### END YOUR CODE
     return out
@@ -85,7 +94,12 @@ def conv_fast(image, kernel):
     out = np.zeros((Hi, Wi))
 
     ### YOUR CODE HERE
-    pass
+    image = zero_pad(image, Hk//2, Wk//2)
+    kernel = np.flip(kernel, 0)
+    kernel = np.flip(kernel, 1)
+    for m in range(Hi):
+        for n in range(Wi):
+            out[m, n] =  np.sum(image[m: m+Hk, n: n+Wk] * kernel)
     ### END YOUR CODE
 
     return out
@@ -102,9 +116,10 @@ def cross_correlation(f, g):
     Returns:
         out: numpy array of shape (Hf, Wf).
     """
-
-    out = None
+    
     ### YOUR CODE HERE
+    g = np.flip(np.flip(g, 0), 1)
+    out = conv_fast(f, g)
     pass
     ### END YOUR CODE
 
@@ -124,9 +139,11 @@ def zero_mean_cross_correlation(f, g):
     Returns:
         out: numpy array of shape (Hf, Wf).
     """
-
+    
     out = None
     ### YOUR CODE HERE
+    g = g - np.mean(g)
+    out = cross_correlation(f, g)
     pass
     ### END YOUR CODE
 
@@ -148,10 +165,12 @@ def normalized_cross_correlation(f, g):
     Returns:
         out: numpy array of shape (Hf, Wf).
     """
-
+    
     out = None
     ### YOUR CODE HERE
-    pass
+    f = (f - np.mean(f))/np.var(f)
+    g = (g - np.mean(g))/np.var(g)
+    out = cross_correlation(f, g)
     ### END YOUR CODE
 
     return out
