@@ -36,6 +36,9 @@ def conv(image, kernel):
     padded = np.pad(image, pad_width, mode='edge')
 
     ### YOUR CODE HERE
+    for i in range(0, Hi):
+        for j in range(0, Wi):
+            out[i, j] = np.sum(padded[i:i + Hk: , j:j + Wk] * kernel)
     pass
     ### END YOUR CODE
 
@@ -59,8 +62,12 @@ def gaussian_kernel(size, sigma):
     """
 
     kernel = np.zeros((size, size))
-
+    k = size//2
     ### YOUR CODE HERE
+    for i in range(0,size):
+        for j in range(0, size):
+            tmp = np.exp(-((i-k)** 2 + (j-k)** 2)/(2 * sigma ** 2))
+            kernel[i,j] = 1/(2 * np.pi * sigma) * tmp
     pass
     ### END YOUR CODE
 
