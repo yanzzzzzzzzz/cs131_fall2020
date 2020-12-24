@@ -168,8 +168,8 @@ def normalized_cross_correlation(f, g):
     
     out = None
     ### YOUR CODE HERE
-    f = (f - np.mean(f))/np.var(f)
-    g = (g - np.mean(g))/np.var(g)
+    f = (f - np.mean(f))/np.std(f)
+    g = (g - np.mean(g))/np.std(g)
     out = cross_correlation(f, g)
     ### END YOUR CODE
 
