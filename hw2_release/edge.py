@@ -88,6 +88,8 @@ def partial_x(img):
     out = None
 
     ### YOUR CODE HERE
+    kernel = np.array([[-0.5,0,0.5]])
+    out = conv(img, kernel)
     pass
     ### END YOUR CODE
 
@@ -108,6 +110,8 @@ def partial_y(img):
     out = None
 
     ### YOUR CODE HERE
+    kernel = np.array([[-0.5,0,0.5]]).reshape((3, 1))
+    out = conv(img, kernel)
     pass
     ### END YOUR CODE
 
@@ -132,6 +136,10 @@ def gradient(img):
     theta = np.zeros(img.shape)
 
     ### YOUR CODE HERE
+    Gx = partial_x(img)
+    Gy = partial_y(img)
+    G = np.sqrt(Gx**2 + Gy**2)
+    theta = (np.arctan2(Gx , Gy)* 180 / np.pi + 360 ) % 360
     pass
     ### END YOUR CODE
 
@@ -159,6 +167,28 @@ def non_maximum_suppression(G, theta):
 
     #print(G)
     ### BEGIN YOUR CODE
+    for i in range(0, H):
+        for j in range(0, W):
+            alpha = np.deg2rad(theta[i, j])
+            northX = i - int(np.round(np.sin(alpha)))
+            northY = j - int(np.round(np.sin(alpha)))
+            southX = i + int(np.round(np.sin(alpha)))
+            southY = j + int(np.round(np.sin(alpha)))
+            p1 = 0
+            p2 = 0
+            if northX <0 or northY <0:
+                p1 = 0
+            else:
+                p1 = G[i - int(np.round(np.sin(alpha))), j - int(np.round(np.sin(alpha)))]
+            if southX >H or southY >W:
+                p2 = 0
+            else:
+                p2 = G[i + int(np.round(np.sin(alpha))), j + int(np.round(np.sin(alpha)))]
+            
+            if (G[i, j] >= p1 and G[i, j] >= p2):
+                out[i, j] = G[i, j]
+            else:
+                out[i, j] = 0
     pass
     ### END YOUR CODE
 
