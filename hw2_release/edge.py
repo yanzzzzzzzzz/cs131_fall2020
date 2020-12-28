@@ -171,19 +171,19 @@ def non_maximum_suppression(G, theta):
         for j in range(0, W):
             alpha = np.deg2rad(theta[i, j])
             northX = i - int(np.round(np.sin(alpha)))
-            northY = j - int(np.round(np.sin(alpha)))
+            northY = j - int(np.round(np.cos(alpha)))
             southX = i + int(np.round(np.sin(alpha)))
-            southY = j + int(np.round(np.sin(alpha)))
+            southY = j + int(np.round(np.cos(alpha)))
             p1 = 0
             p2 = 0
-            if northX <0 or northY <0:
+            if northX <0 or northX >=H or northY <0 or northY>=W:
                 p1 = 0
             else:
-                p1 = G[i - int(np.round(np.sin(alpha))), j - int(np.round(np.sin(alpha)))]
-            if southX >H or southY >W:
+                p1 = G[northX, northY]
+            if southX <0 or southX >=H or southY<0 or southY >=W:
                 p2 = 0
             else:
-                p2 = G[i + int(np.round(np.sin(alpha))), j + int(np.round(np.sin(alpha)))]
+                p2 = G[southX, southY]
             
             if (G[i, j] >= p1 and G[i, j] >= p2):
                 out[i, j] = G[i, j]
@@ -214,6 +214,8 @@ def double_thresholding(img, high, low):
     weak_edges = np.zeros(img.shape, dtype=np.bool)
 
     ### YOUR CODE HERE
+    strong_edges = img > high
+    weak_edges = (img > low) & (img < high)
     pass
     ### END YOUR CODE
 
@@ -273,6 +275,20 @@ def link_edges(strong_edges, weak_edges):
     edges = np.copy(strong_edges)
 
     ### YOUR CODE HERE
+    tmp = np.stack(np.nonzero(weak_edges)).T
+    for weak_edge_coordXY in tmp:
+        neighbors = get_neighbors(weak_edge_coordXY[0], weak_edge_coordXY[1], H, W)
+        isEdge = False
+        for neighbor in neighbors:
+            for indice in indices:
+                if (indice[0] == neighbor[0]) and (indice[1] == neighbor[1]):
+                    edges[weak_edge_coordXY[0], weak_edge_coordXY[1]] = True
+                    isEdge = True
+                    break
+            if(isEdge):
+                break
+                
+        
     pass
     ### END YOUR CODE
 
