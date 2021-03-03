@@ -18,23 +18,22 @@ import time
 from linalg import *
 from imageManip import *
 
-M = np.array(range(1,13)).reshape((4, 3))
-a = np.array([1, 1, 0]).reshape((1, 3))
-b = np.array([-1, 2, 5]).reshape((3, 1))
+# Let's define M.
+M = np.array([[1,2,3],[4,5,6],[7,8,9]])
 
-print("M = \n", M)
-print("The size of M is: ", M.shape)
+# Now let's grab the first eigenvalue and first eigenvector.
+# You should get back a single eigenvalue and a single eigenvector.
+val, vec = get_eigen_values_and_vectors(M[:,:3], 1)
+print("First eigenvalue =", val[0])
 print()
-print("a = ", a)
-print("The size of a is: ", a.shape)
+print("First eigenvector =", vec[0])
 print()
-print("b = ", b)
-print("The size of b is: ", b.shape)
+assert len(vec) == 1
 
-aDotB = dot_product(a, b)
-print(aDotB)
-
-ans = complicated_matrix_function(M, a, b)
-print(ans)
+# Now, let's get the first two eigenvalues and eigenvectors.
+# You should get back a list of two eigenvalues and a list of two eigenvector arrays.
+val, vec = get_eigen_values_and_vectors(M[:,:3], 2)
+print("Eigenvalues =", val)
 print()
-print("The size is: ", ans.shape)
+print("Eigenvectors =", vec)
+assert len(vec) == 2

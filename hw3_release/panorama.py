@@ -53,6 +53,10 @@ def harris_corners(img, window_size=3, k=0.04):
     dy = filters.sobel_h(img)
 
     ### YOUR CODE HERE
+    I_xI_y = dx * dy
+    Ixx = dx ** 2
+    Ixy = dy * dx
+    Iyy = dy **2
     pass
     ### END YOUR CODE
 
