@@ -373,8 +373,12 @@ def hough_transform(img):
     # Find rho corresponding to values in thetas
     # and increment the accumulator in the corresponding coordiate.
     ### YOUR CODE HERE
-    coord_count = len(ys)
-
+    min_rhos = int(np.min(rhos))
+    point_count = len(ys)
+    for i in range(point_count):
+        for j in range(len(cos_t)):
+            rho = int(round(xs[i] * cos_t[j] + ys[i] * sin_t[j]))
+            accumulator[rho-min_rhos][j] = accumulator[rho-min_rhos][j] + 1
     pass
     ### END YOUR CODE
 
