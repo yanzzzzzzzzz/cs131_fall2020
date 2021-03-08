@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from time import time
 from skimage import io
+import PIL.Image
 
 # Load image
 img = io.imread('road.jpg', as_gray=True)
@@ -23,3 +24,9 @@ for i in range(H):
 # Extract edges in ROI
 roi = edges * mask
 acc, rhos, thetas = hough_transform(roi)
+
+I8 = (((acc - acc.min()) / (acc.max() - acc.min())) * 255.9).astype(np.uint8)
+
+img = PIL.Image.fromarray(I8)
+img.save("file.png")
+a=1
