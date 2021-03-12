@@ -87,6 +87,9 @@ def simple_descriptor(patch):
     """
     feature = []
     ### YOUR CODE HERE
+    feature = patch.flatten()
+    feature-=np.mean(feature)
+    feature/=np.std(feature)
     pass
     ### END YOUR CODE
     return feature
@@ -142,6 +145,14 @@ def match_descriptors(desc1, desc2, threshold=0.5):
     dists = cdist(desc1, desc2)
 
     ### YOUR CODE HERE
+    for i in range(len(desc1)):
+        dist = dists[i,:]
+        sort_array = np.sort(dist)
+        if (sort_array[0] / sort_array[1])<=threshold:
+            min_idx = np.argmin(dist)
+            matches.append([i, min_idx])
+
+    matches = np.array(matches).reshape(-1, 2)
     pass
     ### END YOUR CODE
 
@@ -175,6 +186,8 @@ def fit_affine_matrix(p1, p2):
     p2 = pad(p2)
 
     ### YOUR CODE HERE
+    H = np.linalg.lstsq(p2, p1, rcond=None)
+    H = H[0]
     pass
     ### END YOUR CODE
 
@@ -246,6 +259,12 @@ def ransac(keypoints1, keypoints2, matches, n_iters=200, threshold=20):
     '''
 
     ### YOUR CODE HERE
+    for i in range(n_iters)
+        rnd_matches = np.random.shuffle(matches)
+        samples = rnd_matches[:n_samples]
+        sample1 = matched1[]
+        sample2 = pad(keypoints2[samples[:,1]])
+
     pass
     ### END YOUR CODE
     return H, orig_matches[max_inliers]
