@@ -259,12 +259,29 @@ def ransac(keypoints1, keypoints2, matches, n_iters=200, threshold=20):
     '''
 
     ### YOUR CODE HERE
-    for i in range(n_iters)
-        rnd_matches = np.random.shuffle(matches)
-        samples = rnd_matches[:n_samples]
-        sample1 = matched1[]
-        sample2 = pad(keypoints2[samples[:,1]])
+    for i in range(n_iters):
+        # temporary value for saving maximum inliers
+        temp_max = np.zeros(N, dtype=np.int32)
+        temp_n = 0 
+        # random select index set
+        idx = np.random.choice(N, n_samples, replace=False)
+        # get each index correspond matched value
+        p1 = matched1[idx,:]
+        p2 = matched2[idx, :]
+        # Compute affine transformation matrix
+        H = np.linalg.lstsq(p2, p1, rcond=None)[0]
+        H[:, 2] = np.array([0, 0, 1])
+        # Compute transformation point and using Euclidean distance to find inliers which in threshold 
+        temp_max = np.linalg.norm(matched2.dot(H) - matched1, axis=1) ** 2 < threshold
+        temp_n = np.sum(temp_max)
+        # Keep the largest set of inliers
+        if temp_n > n_inliers:
+            max_inliers = temp_max.copy()
+            n_inliers = temp_n
 
+    # Re-compute least-squares estimate on all of the inliers
+    H = np.linalg.lstsq(matched2[max_inliers], matched1[max_inliers], rcond=None)[0]
+    H[:,2] = np.array([0, 0, 1])
     pass
     ### END YOUR CODE
     return H, orig_matches[max_inliers]
@@ -313,9 +330,19 @@ def hog_descriptor(patch, pixels_per_cell=(8,8)):
 
     # For each cell, keep track of gradient histrogram of size n_bins
     cells = np.zeros((rows, cols, n_bins))
-
     # Compute histogram per cell
     ### YOUR CODE HERE
+    for i in range(rows):
+        for j in range(cols):
+            for k in range(G_cells.shape[2]):
+                for l in range(G_cells.shape[3]):
+                    idx = int(theta_cells[i, j, k, l] //degrees_per_bin)
+                    if idx ==9:
+                        idx=8
+                    cells[i, j, idx] = cells[i, j, idx] + G_cells[i, j, k, l]
+
+    cells = (cells -np.mean(cells)) / np.std(cells)
+    block = cells.flatten()
     pass
     ### YOUR CODE HERE
 
