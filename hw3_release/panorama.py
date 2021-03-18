@@ -379,6 +379,10 @@ def linear_blend(img1_warped, img2_warped):
     left_margin = np.argmax(img2_mask[out_H//2, :].reshape(1, out_W), 1)[0]
 
     ### YOUR CODE HERE
+    weight = np.zeros(out_W)
+    weight[0:left_margin] = 1
+    weight[left_margin:right_margin] = np.linspace(1,0,num=(right_margin - left_margin))
+    merged = img1_warped * img1_mask * weight + img2_warped * img2_mask * (1-weight)
     pass
     ### END YOUR CODE
 
@@ -420,7 +424,42 @@ def stitch_multiple_images(imgs, desc_func=simple_descriptor, patch_size=5):
         matches.append(mtchs)
 
     ### YOUR CODE HERE
+    Hs = []
+    for i in range(len(imgs)-1):
+        H, robust_matches = ransac(keypoints[i], keypoints[i+1], matches[i], threshold=1)  
+        if i==0:
+            Hs.append(H)
+        else:
+            Hs.append(Hs[i-1].dot(H))
+
+    for i in range(len(imgs)-1):
+        if i==0:
+            img1 = imgs[i]
+
+        img2 = imgs[i+1]
+        output_shape, offset = get_output_space(img1, [img2], [Hs[i]])
+        # Warp images into output sapce
+        img1_warped = warp_image(img1, np.eye(3), output_shape, offset)
+        img1_mask = (img1_warped != -1) # Mask == 1 inside the image
+        img1_warped[~img1_mask] = 0     # Return background values to 0
+        
+        img2_warped = warp_image(img2, H, output_shape, offset)
+        img2_mask = (img2_warped != -1) # Mask == 1 inside the image
+        img2_warped[~img2_mask] = 0     # Return background values to 0
+
+ 
+
+        merged = img1_warped + img2_warped
+
+        # Track the overlap by adding the masks together
+        overlap = (img1_mask * 1.0 +  # Multiply by 1.0 for bool -> float conversion
+                img2_mask)
+
+        # Normalize through division by `overlap` - but ensure the minimum is 1
+        normalized = merged / np.maximum(overlap, 1)
+        img1 = normalized
     pass
+    panorama = img1
     ### END YOUR CODE
 
     return panorama
