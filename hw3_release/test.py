@@ -22,10 +22,11 @@ ec2_img2 = imread('yosemite2.jpg', as_gray=True)
 ec2_img3 = imread('yosemite3.jpg', as_gray=True)
 ec2_img4 = imread('yosemite4.jpg', as_gray=True)
 
-imgs = [ec2_img1, ec2_img2]#, ec2_img3]#, ec2_img4]
+imgs = [ec2_img1, ec2_img2, ec2_img3, ec2_img4]
 
 # Stitch images together
 panorama = stitch_multiple_images(imgs, desc_func=simple_descriptor, patch_size=5)
+
 
 formatted = (panorama * 255 / np.max(panorama)).astype('uint8')
 img = Image.fromarray(formatted)

@@ -424,42 +424,23 @@ def stitch_multiple_images(imgs, desc_func=simple_descriptor, patch_size=5):
         matches.append(mtchs)
 
     ### YOUR CODE HERE
-    Hs = []
-    for i in range(len(imgs)-1):
-        H, robust_matches = ransac(keypoints[i], keypoints[i+1], matches[i], threshold=1)  
+    Hs = [np.eye(3)]
+    for i in range(len(imgs) - 1):
+        Hs.append(ransac(keypoints[i], keypoints[i + 1], matches[i], threshold=1)[0])
+    for i in range(1, len(imgs)):
+        Hs[i] = Hs[i].dot(Hs[i - 1]) # combine multiple transformation matrices by accumulation previous homogeneous matrix
+    output_shape, offset = get_output_space(imgs[0], imgs[1:], Hs[1:])# get panorama image output shape and offset
+    for i in range(len(imgs)):
+        img_warped = warp_image(imgs[i], Hs[i], output_shape, offset)
+        img_mask = (img_warped != -1)   # Mask == 1 inside the image
+        img_warped[~img_mask] = 0       # Return background values to 0
         if i==0:
-            Hs.append(H)
+            panorama = img_warped
         else:
-            Hs.append(Hs[i-1].dot(H))
+            panorama = linear_blend(panorama, img_warped)
 
-    for i in range(len(imgs)-1):
-        if i==0:
-            img1 = imgs[i]
-
-        img2 = imgs[i+1]
-        output_shape, offset = get_output_space(img1, [img2], [Hs[i]])
-        # Warp images into output sapce
-        img1_warped = warp_image(img1, np.eye(3), output_shape, offset)
-        img1_mask = (img1_warped != -1) # Mask == 1 inside the image
-        img1_warped[~img1_mask] = 0     # Return background values to 0
-        
-        img2_warped = warp_image(img2, H, output_shape, offset)
-        img2_mask = (img2_warped != -1) # Mask == 1 inside the image
-        img2_warped[~img2_mask] = 0     # Return background values to 0
-
- 
-
-        merged = img1_warped + img2_warped
-
-        # Track the overlap by adding the masks together
-        overlap = (img1_mask * 1.0 +  # Multiply by 1.0 for bool -> float conversion
-                img2_mask)
-
-        # Normalize through division by `overlap` - but ensure the minimum is 1
-        normalized = merged / np.maximum(overlap, 1)
-        img1 = normalized
     pass
-    panorama = img1
+    
     ### END YOUR CODE
 
     return panorama
