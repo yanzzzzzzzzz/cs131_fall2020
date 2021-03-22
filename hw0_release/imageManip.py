@@ -128,7 +128,12 @@ def rotate2d(point, theta):
     # Reminder: np.cos() and np.sin() will be useful here!
 
     ## YOUR CODE HERE
+    x = point[0]
+    y = point[1]
+    point[0] = x * np.cos(theta) - y * np.sin(theta)
+    point[1] = y * np.cos(theta) + x * np.sin(theta)
     pass
+    return point
     ### END YOUR CODE
 
 
