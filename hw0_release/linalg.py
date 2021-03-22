@@ -77,6 +77,7 @@ def eigen_decomp(M):
     w = None
     v = None
     ### YOUR CODE HERE
+    w, v=np.linalg.eig(M)
     pass
     ### END YOUR CODE
     return w, v
@@ -107,7 +108,12 @@ def euclidean_distance_native(u, v):
     #     sum.
 
     ### YOUR CODE HERE
+    dist = 0
+    for i in range(len(u)):
+        dist = dist +(u[i]- v[i]) * (u[i]- v[i])
+    dist = np.sqrt(dist)
     pass
+    return dist
     ### END YOUR CODE
 
 
@@ -139,7 +145,9 @@ def euclidean_distance_numpy(u, v):
     #     sum.
 
     ### YOUR CODE HERE
+    dist = np.sqrt(np.sum((u-v)*(u-v)))
     pass
+    return dist
     ### END YOUR CODE
 
 
@@ -163,6 +171,10 @@ def get_eigen_values_and_vectors(M, k):
     eigenvalues = []
     eigenvectors = []
     ### YOUR CODE HERE
+    w, v = eigen_decomp(M)
+    sort_idx = np.argsort(np.abs(w))[::-1] #sort by descend
+    eigenvalues = w[sort_idx[0:k]]
+    eigenvectors = v[sort_idx[0:k],:]
     pass
     ### END YOUR CODE
     return eigenvalues, eigenvectors

@@ -20,6 +20,7 @@ def load(image_path):
 
     ### YOUR CODE HERE
     # Use skimage io.imread
+    out = io.imread(image_path)
     pass
     ### END YOUR CODE
 
@@ -45,6 +46,7 @@ def crop_image(image, start_row, start_col, num_rows, num_cols):
     out = None
 
     ### YOUR CODE HERE
+    out = image[start_row:start_row + num_rows,start_col:start_col + num_cols]
     pass
     ### END YOUR CODE
 
@@ -68,6 +70,7 @@ def dim_image(image):
     out = None
 
     ### YOUR CODE HERE
+    out = 0.5 * image * image
     pass
     ### END YOUR CODE
 
@@ -96,6 +99,12 @@ def resize_image(input_image, output_rows, output_cols):
     #    > This should require two nested for loops!
 
     ### YOUR CODE HERE
+    row_scale_factor = input_rows / output_rows
+    col_scale_factor = input_cols / output_cols
+
+    for i in range(output_rows):
+        for j in range(output_cols):
+            output_image[i,j,:] = input_image[int(i * row_scale_factor), int(j * col_scale_factor), :]
     pass
     ### END YOUR CODE
 
