@@ -155,6 +155,14 @@ def rotate_image(input_image, theta):
     output_image = np.zeros_like(input_image)
 
     ## YOUR CODE HERE
+    half_rows = input_rows // 2
+    half_cols = input_cols // 2
+    for i in range(-half_rows,half_rows):
+        for j in range(-half_cols,half_cols):
+            point = np.array([i,j])
+            r_x, r_y = rotate2d(point, theta)
+            if int(r_x) + half_rows >=0 and int(r_x) + half_rows < input_rows and int(r_y) + half_cols>=0 and int(r_y) + half_cols < input_cols:
+                output_image[i + half_rows, j + half_cols, :] = input_image[int(r_x) + half_rows, int(r_y) + half_cols, :]
     pass
     ### END YOUR CODE
 
