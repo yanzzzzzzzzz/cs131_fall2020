@@ -142,8 +142,10 @@ def zero_mean_cross_correlation(f, g):
     
     out = None
     ### YOUR CODE HERE
-    g = g - np.mean(g)
-    out = cross_correlation(f, g)
+    g = np.flip(g, axis=0)
+    g = np.flip(g, axis=1)
+    g -= np.mean(g)
+    out = conv_fast(f, g)
     pass
     ### END YOUR CODE
 
@@ -168,9 +170,19 @@ def normalized_cross_correlation(f, g):
     
     out = None
     ### YOUR CODE HERE
-    f = (f - np.mean(f))/np.std(f)
-    g = (g - np.mean(g))/np.std(g)
-    out = cross_correlation(f, g)
+    g = (g - np.mean(g)) / np.std(g)
+
+    Hi, Wi = f.shape
+    Hk, Wk = g.shape
+    out = np.zeros((Hi, Wi))
+    pad_f = zero_pad(f, int(Hk/2), int(Wk/2))
+
+    for i in range(Hi):
+        for j in range(Wi):
+            sub_f = pad_f[i:i+Hk, j:j+Wk]
+            sub_f_mean = np.mean(sub_f)
+            sub_f_std = np.std(sub_f)
+            out[i, j] = np.sum(g * (sub_f - sub_f_mean)/sub_f_std)
     ### END YOUR CODE
 
     return out
