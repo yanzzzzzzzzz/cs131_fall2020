@@ -45,6 +45,20 @@ def kmeans(features, k, num_iters=100):
 
     for n in range(num_iters):
         ### YOUR CODE HERE
+        group_idx = []
+        for j in range(N):
+            min_value = 2147483647
+            min_idx = 0
+            for i in range(k):
+                dist = 0
+                for d in range(D):
+                    dist = dist + (features[j,d] - centers[i,d]) * (features[j,d] - centers[i,d])# euclidean distance
+                dist = np.sqrt(dist)
+                if dist <min_value:
+                    min_value = dist
+                    min_idx = i
+            group_idx.append(min_idx)
+        group_idx = np.array(group_idx)
         pass
         ### END YOUR CODE
 
