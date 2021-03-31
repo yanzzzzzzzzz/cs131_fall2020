@@ -59,9 +59,13 @@ def kmeans(features, k, num_iters=100):
                     min_idx = i
             group_idx.append(min_idx)
         group_idx = np.array(group_idx)
+        ## 更新群心座標
+        for i in range(k):
+            idxs = np.where(group_idx == i)
+            centers[i,:] = np.mean(features[idxs],axis=0)
         pass
         ### END YOUR CODE
-
+    assignments = group_idx
     return assignments
 
 def kmeans_fast(features, k, num_iters=100):
@@ -95,9 +99,15 @@ def kmeans_fast(features, k, num_iters=100):
 
     for n in range(num_iters):
         ### YOUR CODE HERE
+        dist = cdist(features, centers, metric='euclidean')
+        group = np.argmin(dist,axis=1)
+        ## 更新群心座標
+        for i in range(k):
+            idxs = np.where(group == i)
+            centers[i,:] = np.mean(features[idxs],axis=0)
         pass
         ### END YOUR CODE
-
+    assignments = group
     return assignments
 
 
@@ -150,6 +160,25 @@ def hierarchical_clustering(features, k):
 
     while n_clusters > k:
         ### YOUR CODE HERE
+        dist = pdist(centers)
+        dist_martix = squareform(dist)
+        for i in range(dist_martix.shape[0]):
+            dist_martix[i, i] = 2147483647
+
+        min_row, min_col = np.unravel_index(dist_martix.argmin(), dist_martix.shape)
+        # 選擇索引較小的群當作主群, 合併索引較大的群
+        small_Idx = min(min_row, min_col)
+        big_Idx = max(min_row, min_col)
+        assignments = np.where(assignments != big_Idx, assignments, small_Idx)
+        assignments = np.where(assignments  < big_Idx, assignments, assignments - 1)
+        # 刪除被合併的群中心
+        centers = np.delete(centers, big_Idx, axis=0)
+
+        # 更新變動的群心
+        update_center_idx = np.where(assignments == small_Idx)
+        centers[small_Idx] = np.mean(features[update_center_idx], axis=0)
+
+        n_clusters -=1
         pass
         ### END YOUR CODE
 
@@ -171,6 +200,7 @@ def color_features(img):
     features = np.zeros((H*W, C))
 
     ### YOUR CODE HERE
+    features = img.reshape((H*W,C))
     pass
     ### END YOUR CODE
 
@@ -200,11 +230,15 @@ def color_position_features(img):
     features = np.zeros((H*W, C+2))
 
     ### YOUR CODE HERE
+    for i in range(H):
+        for j in range(W):
+            features[i*W+j] = np.array([color[i, j, 0], color[i, j, 1], color[i, j, 2], i, j])
+    features = (features - np.mean(features, axis=0)) / np.std(features, axis=0)
     pass
     ### END YOUR CODE
 
     return features
-
+import cv2
 def my_features(img):
     """ Implement your own features
 
@@ -214,8 +248,12 @@ def my_features(img):
     Returns:
         features - array of (H * W, C)
     """
-    features = None
+    H, W, C = img.shape
+    features = np.zeros((H*W, C))
     ### YOUR CODE HERE
+    hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+    features = hsv.reshape((H*W,C))
+    features = (features - np.mean(features, axis=0)) / np.std(features, axis=0)
     pass
     ### END YOUR CODE
     return features
@@ -240,6 +278,7 @@ def compute_accuracy(mask_gt, mask):
 
     accuracy = None
     ### YOUR CODE HERE
+    accuracy = np.mean(mask == mask_gt)
     pass
     ### END YOUR CODE
 
