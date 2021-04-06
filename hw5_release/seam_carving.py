@@ -30,6 +30,9 @@ def energy_function(image):
     gray_image = color.rgb2gray(image)
 
     ### YOUR CODE HERE
+    dx = np.gradient(gray_image, axis=0)
+    dy = np.gradient(gray_image, axis=1)
+    out = np.abs(dx) + np.abs(dy)
     pass
     ### END YOUR CODE
 
