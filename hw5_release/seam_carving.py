@@ -83,6 +83,13 @@ def compute_cost(image, energy, axis=1):
     paths[0] = 0  # we don't care about the first row of paths
 
     ### YOUR CODE HERE
+    for i in range(1, H):
+        M1 = np.insert(cost[i-1, 0:W-1], 0, 1e10, axis=0) #左側成本與路徑矩陣
+        M2 = cost[i-1, :] #中間成本與路徑矩陣
+        M3 = np.insert(cost[i-1, 1:W], W-1 , 1e10, axis=0) #右側成本與路徑矩陣
+        M = np.r_[M1, M2, M3].reshape(3, -1) 
+        cost[i] = energy[i] + np.min(M, axis=0) #更新累積最小成本
+        paths[i] = np.argmin(M, axis=0) -1 #更新移動路徑
     pass
     ### END YOUR CODE
 
@@ -121,6 +128,9 @@ def backtrack_seam(paths, end):
     seam[H-1] = end
 
     ### YOUR CODE HERE
+    for i in range(H-2,-1,-1):
+        seam[i] = seam[i+1] + paths[i+1,seam[i+1]]
+
     pass
     ### END YOUR CODE
 
@@ -151,6 +161,7 @@ def remove_seam(image, seam):
     out = None
     H, W, C = image.shape
     ### YOUR CODE HERE
+    out = image[np.arange(W) != seam[:, None]].reshape(H, W-1, C)    
     pass
     ### END YOUR CODE
     out = np.squeeze(out)  # remove last dimension if C == 1
@@ -188,7 +199,7 @@ def reduce(image, size, axis=1, efunc=energy_function, cfunc=compute_cost, bfunc
     """
 
     out = np.copy(image)
-    if axis == 0:
+    if axis == 0: # transpose input image when different axis resize
         out = np.transpose(out, (1, 0, 2))
 
     H = out.shape[0]
@@ -199,6 +210,13 @@ def reduce(image, size, axis=1, efunc=energy_function, cfunc=compute_cost, bfunc
     assert size > 0, "Size must be greater than zero"
 
     ### YOUR CODE HERE
+
+    for i in range(out.shape[1] - size):
+        energy = efunc(out)
+        cost, paths = cfunc(out, energy)
+        end = np.argmin(cost[-1])
+        seam = backtrack_seam(paths, end)
+        out = remove_seam(out, seam)
     pass
     ### END YOUR CODE
 
@@ -226,6 +244,9 @@ def duplicate_seam(image, seam):
     H, W, C = image.shape
     out = np.zeros((H, W + 1, C))
     ### YOUR CODE HERE
+    for i in range(H):
+        idx = seam[i]
+        out[i] = np.concatenate((image[i, 0:idx+1], image[i, idx:W]), axis = None).reshape(W+1, -1)  
     pass
     ### END YOUR CODE
 
@@ -267,6 +288,13 @@ def enlarge_naive(image, size, axis=1, efunc=energy_function, cfunc=compute_cost
     assert size > W, "size must be greather than %d" % W
 
     ### YOUR CODE HERE
+    for i in range(size - out.shape[1]):
+        energy = efunc(out)
+        cost, paths = cfunc(out, energy)
+        end = np.argmin(cost[-1])
+        seam = backtrack_seam(paths, end)
+        out = duplicate_seam(out, seam)
+
     pass
     ### END YOUR CODE
 
@@ -394,6 +422,11 @@ def enlarge(image, size, axis=1, efunc=energy_function, cfunc=compute_cost, dfun
     assert size <= 2 * W, "size must be smaller than %d" % (2 * W)
 
     ### YOUR CODE HERE
+    seams = find_seams(out, size - W)
+    seams = np.expand_dims(seams, axis=2)
+    for i in range(size - W):
+        out = duplicate_seam(out, np.where(seams== i+1)[1])
+        seams = duplicate_seam(seams, np.where(seams == i+1)[1])
     pass
     ### END YOUR CODE
 
@@ -432,10 +465,17 @@ def compute_forward_cost(image, energy):
     cost[0] = energy[0]
     for j in range(W):
         if j > 0 and j < W - 1:
-            cost[0, j] += np.abs(image[0, j+1] - image[0, j-1])
+            cost[0, j] += np.abs(image[0, j+1] - image[0, j-1]) #中間的cost預先加入移除後左右的梯度
     paths[0] = 0  # we don't care about the first row of paths
 
     ### YOUR CODE HERE
+    for i in range(1,H):
+        M1 = np.insert(cost[i-1, 0:W-1], 0, 1e10, axis=0) #左側成本與路徑矩陣
+        M2 = cost[i-1, :] #中間成本與路徑矩陣
+        M3 = np.insert(cost[i-1, 1:W], W-1 , 1e10, axis=0) #右側成本與路徑矩陣
+        CL = np.abs(image[i-1, 0] - image[i, 0])
+        CR = np.abs(image[i-1, 0] - image[i, 0])
+        M = np.r_[M1, M2, M3].reshape(3, -1) 
     pass
     ### END YOUR CODE
 
