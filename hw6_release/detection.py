@@ -5,7 +5,7 @@ from skimage.filters import gaussian
 from scipy import signal
 from scipy.ndimage import interpolation
 import math
-
+from skimage.io import imsave, imread
 def hog_feature(image, pixel_per_cell=8):
     """
     Compute hog feature for a given image.
@@ -24,6 +24,7 @@ def hog_feature(image, pixel_per_cell=8):
         hog_image: an image representation of hog provided by skimage.
     """
     ### YOUR CODE HERE
+    hog_feature, hog_image = feature.hog(image, pixels_per_cell=(pixel_per_cell, pixel_per_cell), block_norm='L1', visualize=True)
     pass
     ### END YOUR CODE
     return (hog_feature, hog_image)
@@ -53,8 +54,11 @@ def sliding_window(image, template_feature, step_size, window_size, pixel_per_ce
         response_map: an np array of size (ceil H / step_size, ceil W / step_size).
         response_map_resized: an np array of size (h,w).
     """
+    # 取得sliding window 的 window size
     winH, winW = window_size
+    # 輸入影像的寬高
     H, W = image.shape
+    #以輸入影像為中心, 向外擴展寬高/2的大小,並填充為0
     pad_image = np.lib.pad(
         image,
         ((winH // 2,
@@ -72,7 +76,14 @@ def sliding_window(image, template_feature, step_size, window_size, pixel_per_ce
         for c in range(0, W, step_size):
             score = 0
             ### YOUR CODE HERE
-            pass
+            part_img = pad_image[r:r+winH, c:c+winW]
+            hog_feature = feature.hog(part_img, pixels_per_cell = (pixel_per_cell, pixel_per_cell))
+            score = hog_feature.dot(template_feature)
+            if score > max_score:
+                max_score = score
+                maxr = r
+                maxc = c
+
             ### END YOUR CODE
             response_map[(r) // step_size, (c) // step_size] = score
 
@@ -112,6 +123,9 @@ def pyramid(image, scale=0.9, min_size=(200, 100)):
     while True:
         # Use "break" to exit this loop when termination conditions are met.
         ### YOUR CODE HERE
+        H,W = image.shape
+        if H < min_size[0] or W < min_size[1]:
+            break
         pass
         ### END YOUR CODE
 
@@ -150,6 +164,15 @@ def pyramid_score(image, template_feature, shape, step_size=20,
 
     images = pyramid(image, scale)
     ### YOUR CODE HERE
+    for i in range(len(images)):
+        (score, r, c, response_map_resized, response_map) = \
+            sliding_window(images[i][1], template_feature, step_size=30, window_size=shape, return_unresized_response=True)
+        if score > max_score:
+            max_score = score
+            maxr = r
+            maxc = c
+            max_scale = images[i][0]
+            max_response_map = response_map_resized
     pass
     ### END YOUR CODE
     return max_score, maxr, maxc, max_scale, max_response_map
