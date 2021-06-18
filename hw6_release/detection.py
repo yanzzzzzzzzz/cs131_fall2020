@@ -1,3 +1,4 @@
+from matplotlib.pyplot import axis
 import numpy as np
 from skimage import feature, data, color, exposure, io
 from skimage.transform import rescale, resize, downscale_local_mean
@@ -166,7 +167,7 @@ def pyramid_score(image, template_feature, shape, step_size=20,
     ### YOUR CODE HERE
     for i in range(len(images)):
         (score, r, c, response_map_resized, response_map) = \
-            sliding_window(images[i][1], template_feature, step_size=30, window_size=shape, return_unresized_response=True)
+            sliding_window(images[i][1], template_feature, step_size=30, window_size=shape, pixel_per_cell = pixel_per_cell, return_unresized_response=True)
         if score > max_score:
             max_score = score
             maxr = r
@@ -205,7 +206,14 @@ def compute_displacement(part_centers, face_shape):
     """
     d = np.zeros((part_centers.shape[0], 2))
     ### YOUR CODE HERE
+    face_center_x = face_shape[0] / 2
+    face_center_y = face_shape[1] / 2
+    for i in range(part_centers.shape[0]):
+        d[i][0] =  face_center_x - part_centers[i][0]
+        d[i][1] =  face_center_y - part_centers[i][1]
     pass
+    mu = np.average(d, axis=0)
+    sigma = np.std(d, axis=0)
     ### END YOUR CODE
     return mu, sigma
 
@@ -231,6 +239,8 @@ def shift_heatmap(heatmap, mu):
     """
     ### YOUR CODE HERE
     heatmap = np.copy(heatmap)
+    new_heatmap = heatmap / np.amax(heatmap)
+    new_heatmap = interpolation.shift(new_heatmap, mu)
     pass
     ### END YOUR CODE
     return new_heatmap
@@ -260,17 +270,31 @@ def gaussian_heatmap(heatmap_face, heatmaps, sigmas):
     heatmaps = list(np.copy(heatmaps))
     sigmas = list(np.copy(sigmas))
     ### YOUR CODE HERE
+    for i in range(len(sigmas)):
+        heatmaps[i] = gaussian(heatmaps[i], sigma=sigmas[i])
+
+    heatmap = np.sum(np.array(heatmaps),axis=0)
+    maxr,maxc = np.argwhere(heatmap == np.amax(heatmap))[0]
     pass
     ### END YOUR CODE
     return heatmap, maxr, maxc
 
 
-def detect_multiple(image, response_map):
+def detect_multiple(image, response_map, face_shape):
     """
     Extra credit
     """
-    detected_faces = None
+    detected_faces = []
     ### YOUR CODE HERE
+    
+    h, w = face_shape
+    for i in range(5):
+        max_val = np.amax(response_map)
+        maxr,maxc = np.argwhere(response_map == max_val)[0]
+        
+        print("val:",max_val," x:",maxr," y:",maxc)
+        response_map[maxr-h//2:maxr+h//2, maxc-w//2:maxc+w//2] = 0
+        detected_faces.append((maxr,maxc))
     pass
     ### END YOUR CODE
     return detected_faces
