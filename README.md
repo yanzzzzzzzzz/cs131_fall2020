@@ -1,6 +1,7 @@
 # CS131: Computer Vision Foundations and Applications
 
-This repository contains the released assignments for the fall 2020 iteration of CS131, a course at Stanford taught by Juan Carlos Niebles and Ranjay Krishna.
+This repository contains the released assignments for the fall 2020 iteration of CS131, a course at Stanford taught by Juan Carlos Niebles and Jiajun Wu
+.
 
 # Homework #0 : Basics (Done)
 * Basic linear algebra
