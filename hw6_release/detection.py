@@ -286,13 +286,12 @@ def detect_multiple(image, response_map, face_shape):
     """
     detected_faces = []
     ### YOUR CODE HERE
-    
+
     h, w = face_shape
     for i in range(5):
         max_val = np.amax(response_map)
         maxr,maxc = np.argwhere(response_map == max_val)[0]
         
-        print("val:",max_val," x:",maxr," y:",maxc)
         response_map[maxr-h//2:maxr+h//2, maxc-w//2:maxc+w//2] = 0
         detected_faces.append((maxr,maxc))
     pass
