@@ -124,18 +124,25 @@ def split_folds(X_train, y_train, num_folds):
 
     # YOUR CODE HERE
     # Hint: You can use the numpy array_split function.
-    train_data = np.hstack((X_train, np.reshape(y_train,(-1,1))))
-    split_data = np.array_split(train_data, num_folds)
-    split_data = np.array(split_data)
-    for fold in range(num_folds):
-        tmp_train = []
-        for vals_fold in range(num_folds):
-            for now_idx in range(num_folds):
-                if(now_idx == vals_fold):
-                    X_vals[fold] = split_data[now_idx,:,0:X_train.shape[1]]
-                    y_vals[fold] = split_data[now_idx,:,-1]
+    split_X_train = np.array(np.array_split(X_train, num_folds))
+    split_y_train = np.array(np.array_split(y_train, num_folds))
+    for i in range(num_folds):
+        tmp_X = []
+        tmp_y = []
+        for j in range(num_folds):
+            if(i==j):
+                X_vals[i] = split_X_train[i]
+                y_vals[i] = split_y_train[i]
+            else:
+                if(tmp_X==[]):
+                    tmp_X = split_X_train[j]
+                    tmp_y = split_y_train[j]
                 else:
-                    a=1
+                    tmp_X = np.vstack((tmp_X,split_X_train[j]))
+                    tmp_y = np.hstack((tmp_y, split_y_train[j]))
+        X_trains[i] = tmp_X
+        y_trains[i] = tmp_y
+  
                     
     pass
     # END YOUR CODE
