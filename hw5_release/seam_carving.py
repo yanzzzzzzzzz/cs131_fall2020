@@ -470,13 +470,24 @@ def compute_forward_cost(image, energy):
 
     ### YOUR CODE HERE
     for i in range(1,H):
-        M1 = np.insert(cost[i-1, 0:W-1], 0, 1e10, axis=0) #左側成本與路徑矩陣
-        M2 = cost[i-1, :] #中間成本與路徑矩陣
-        M3 = np.insert(cost[i-1, 1:W], W-1 , 1e10, axis=0) #右側成本與路徑矩陣
-        CL = np.abs(image[i-1, 0] - image[i, 0])
-        CR = np.abs(image[i-1, 0] - image[i, 0])
-        M = np.r_[M1, M2, M3].reshape(3, -1) 
-    pass
+        M1 = np.insert(image[i,:W-1],0,0,axis = 0)
+        M2 = image[i-1]
+        M3 = np.insert(image[i,1:W],W-1,0,axis = 0) 
+        Cv = abs(M3 - M1)
+        Cv[0] = 0
+        Cv[-1] = 0
+        Cl = Cv + abs(M2 - M1) 
+        Cr = Cv + abs(M2 - M3) 
+        Cl[0] = 0
+        Cr[-1] = 0
+        c1 = np.insert(cost[i-1,:W-1],0,1e10,axis = 0)
+        c2 = cost[i-1]
+        c3 = np.insert(cost[i-1,1:W],W-1,1e10,axis = 0) 
+        
+        M = np.c_[Cl+c1,Cv+c2,Cr+c3]
+
+        cost[i] = energy[i]+np.min(M,axis = 1)
+        paths[i] = np.argmin(M,axis = 1) - 1
     ### END YOUR CODE
 
     # Check that paths only contains -1, 0 or 1
