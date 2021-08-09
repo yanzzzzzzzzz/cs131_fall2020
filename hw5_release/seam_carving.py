@@ -469,24 +469,64 @@ def compute_forward_cost(image, energy):
     paths[0] = 0  # we don't care about the first row of paths
 
     ### YOUR CODE HERE
-    for i in range(1,H):
-        M1 = np.insert(image[i,:W-1], 0, 0, axis = 0) # [0 I(i,0) I(i,1) .. I(i,W-2)]
-        M2 = image[i-1] # [I(i-1,0) I(i-1,1) .. I(i-1,W)]
-        M3 = np.insert(image[i,1:W], W-1, 0, axis = 0) # [I(i,0) I(i,1) .. I(i,W-1)]
-        Cv = abs(M3 - M1) # 
-        Cv[0] = 0
-        Cv[-1] = 0
-        Cl = Cv + abs(M2 - M1) 
-        Cr = Cv + abs(M2 - M3) 
-        Cl[0] = 0
-        Cr[-1] = 0
-        c1 = np.insert(cost[i-1,:W-1],0,1e10,axis = 0)
-        c2 = cost[i-1]
-        c3 = np.insert(cost[i-1,1:W],W-1,1e10,axis = 0) 
-        
-        M = np.c_[Cl+c1,Cv+c2,Cr+c3]
+    # for i in range(1,H):
+    #     M1 = np.insert(image[i,:W-1],0,0,axis = 0)  # M1 = [0, I(i,0), I(i,1),.., I(i,W-2) ] array size:W*1
+    #     M2 = image[i-1]                             # M2 = [I(i-1,0), I(i-1,1),..., I(i-1,W-1)] array size:W*1
+    #     M3 = np.insert(image[i,1:W],W-1,0,axis = 0) # M3 = [I(i,1), I(i,2),.., I(i,W-1), 0] array size:W*1
+    #     # 計算 Cu
+    #     # Cu = [0, |I(i,0) - I(i,2)|, |I(i,1) - I(i,3)|,...,|I(i,W-3) - I(i,W-1)|, 0] 
+    #     # 第0列與第W-1列忽略不計
+    #     Cu = abs(M3 - M1) 
+    #     Cu[0] = 0
+    #     Cu[-1] = 0
 
-        cost[i] = energy[i]+np.min(M,axis = 1)
+    #     # 計算 CL 
+    #     # CL = [0, 
+    #     #       |I(i,0) - I(i,2)|        + |I(i-1,1) - I(i,0)|, 
+    #     #       |I(i,1) - I(i,3)|        + |I(i-1,2) - I(i,1)|,...,
+    #     #       0                        + |I(i-1,W-2) - I(i,W-1)|]
+    #     # 第0列忽略
+    #     Cl = Cu + abs(M2 - M1) 
+    #     Cl[0] = 0
+        
+    #     # 計算 CR
+    #     # CR = [0                        + |I(i-1,0) - I(i,1)|, 
+    #     #       |I(i,0) - I(i,2)|        + |I(i-1,1) - I(i,2)|, 
+    #     #       |I(i,1) - I(i,3)|        + |I(i-1,2) - I(i,3)|,...,
+    #     #       |I(i,W-4) - I(i,W-2)|    + |I(i-1,W-2) - I(i,W-2)|,
+    #     #       0]
+    #     Cr = Cu + abs(M2 - M3) 
+    #     Cr[-1] = 0
+
+    #     c1 = np.insert(cost[i-1,:W-1],0,1e10,axis = 0)
+    #     c2 = cost[i-1]
+    #     c3 = np.insert(cost[i-1,1:W],W-1,1e10,axis = 0) 
+        
+    #     M = np.c_[Cl+c1, Cu+c2, Cr+c3]
+
+    #     cost[i] = energy[i]+np.min(M,axis = 1)
+    #     paths[i] = np.argmin(M,axis = 1) - 1 # 循著y軸找最小值索引值,得到接縫路線
+    for i in range(1,H):
+        M = np.zeros((W,3))
+        for j in range(0,W):
+            Cu =  Cr = Cl = Ml = Mu = Mr = 0
+            if j==0:
+                Ml = 1e10
+                Mr = cost[i-1,j+1]
+                Cr = np.abs(image[i-1, j] - image[i, j+1]) + Cu
+            elif j==(W-1):
+                Ml = cost[i-1,j-1]
+                Mr = 1e10
+                Cl = np.abs(image[i-1, j] - image[i, j-1]) + Cu
+            else:
+                Cu = np.abs(image[i, j+1] - image[i, j-1])
+                Cr = np.abs(image[i-1, j] - image[i, j+1]) + Cu
+                Cl = np.abs(image[i-1, j] - image[i, j-1]) + Cu
+                Ml = cost[i-1,j-1]
+                Mr = cost[i-1,j+1]
+            Mu = cost[i-1,j]
+            M[j, :] = [Cl + Ml, Cu + Mu, Cr + Mr]
+            cost[i,j] = np.min(M[j,:]) + energy[i, j]
         paths[i] = np.argmin(M,axis = 1) - 1
     ### END YOUR CODE
 
