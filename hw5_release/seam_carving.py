@@ -470,10 +470,10 @@ def compute_forward_cost(image, energy):
 
     ### YOUR CODE HERE
     for i in range(1,H):
-        M1 = np.insert(image[i,:W-1],0,0,axis = 0)
-        M2 = image[i-1]
-        M3 = np.insert(image[i,1:W],W-1,0,axis = 0) 
-        Cv = abs(M3 - M1)
+        M1 = np.insert(image[i,:W-1], 0, 0, axis = 0) # [0 I(i,0) I(i,1) .. I(i,W-2)]
+        M2 = image[i-1] # [I(i-1,0) I(i-1,1) .. I(i-1,W)]
+        M3 = np.insert(image[i,1:W], W-1, 0, axis = 0) # [I(i,0) I(i,1) .. I(i,W-1)]
+        Cv = abs(M3 - M1) # 
         Cv[0] = 0
         Cv[-1] = 0
         Cl = Cv + abs(M2 - M1) 
