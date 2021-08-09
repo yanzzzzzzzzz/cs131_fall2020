@@ -465,69 +465,73 @@ def compute_forward_cost(image, energy):
     cost[0] = energy[0]
     for j in range(W):
         if j > 0 and j < W - 1:
-            cost[0, j] += np.abs(image[0, j+1] - image[0, j-1]) #中間的cost預先加入移除後左右的梯度
+            cost[0, j] += np.abs(image[0, j+1] - image[0, j-1])
     paths[0] = 0  # we don't care about the first row of paths
 
     ### YOUR CODE HERE
-    # for i in range(1,H):
-    #     M1 = np.insert(image[i,:W-1],0,0,axis = 0)  # M1 = [0, I(i,0), I(i,1),.., I(i,W-2) ] array size:W*1
-    #     M2 = image[i-1]                             # M2 = [I(i-1,0), I(i-1,1),..., I(i-1,W-1)] array size:W*1
-    #     M3 = np.insert(image[i,1:W],W-1,0,axis = 0) # M3 = [I(i,1), I(i,2),.., I(i,W-1), 0] array size:W*1
-    #     # 計算 Cu
-    #     # Cu = [0, |I(i,0) - I(i,2)|, |I(i,1) - I(i,3)|,...,|I(i,W-3) - I(i,W-1)|, 0] 
-    #     # 第0列與第W-1列忽略不計
-    #     Cu = abs(M3 - M1) 
-    #     Cu[0] = 0
-    #     Cu[-1] = 0
-
-    #     # 計算 CL 
-    #     # CL = [0, 
-    #     #       |I(i,0) - I(i,2)|        + |I(i-1,1) - I(i,0)|, 
-    #     #       |I(i,1) - I(i,3)|        + |I(i-1,2) - I(i,1)|,...,
-    #     #       0                        + |I(i-1,W-2) - I(i,W-1)|]
-    #     # 第0列忽略
-    #     Cl = Cu + abs(M2 - M1) 
-    #     Cl[0] = 0
-        
-    #     # 計算 CR
-    #     # CR = [0                        + |I(i-1,0) - I(i,1)|, 
-    #     #       |I(i,0) - I(i,2)|        + |I(i-1,1) - I(i,2)|, 
-    #     #       |I(i,1) - I(i,3)|        + |I(i-1,2) - I(i,3)|,...,
-    #     #       |I(i,W-4) - I(i,W-2)|    + |I(i-1,W-2) - I(i,W-2)|,
-    #     #       0]
-    #     Cr = Cu + abs(M2 - M3) 
-    #     Cr[-1] = 0
-
-    #     c1 = np.insert(cost[i-1,:W-1],0,1e10,axis = 0)
-    #     c2 = cost[i-1]
-    #     c3 = np.insert(cost[i-1,1:W],W-1,1e10,axis = 0) 
-        
-    #     M = np.c_[Cl+c1, Cu+c2, Cr+c3]
-
-    #     cost[i] = energy[i]+np.min(M,axis = 1)
-    #     paths[i] = np.argmin(M,axis = 1) - 1 # 循著y軸找最小值索引值,得到接縫路線
+    # One for-loop version
     for i in range(1,H):
-        M = np.zeros((W,3))
-        for j in range(0,W):
-            Cu =  Cr = Cl = Ml = Mu = Mr = 0
-            if j==0:
-                Ml = 1e10
-                Mr = cost[i-1,j+1]
-                Cr = np.abs(image[i-1, j] - image[i, j+1]) + Cu
-            elif j==(W-1):
-                Ml = cost[i-1,j-1]
-                Mr = 1e10
-                Cl = np.abs(image[i-1, j] - image[i, j-1]) + Cu
-            else:
-                Cu = np.abs(image[i, j+1] - image[i, j-1])
-                Cr = np.abs(image[i-1, j] - image[i, j+1]) + Cu
-                Cl = np.abs(image[i-1, j] - image[i, j-1]) + Cu
-                Ml = cost[i-1,j-1]
-                Mr = cost[i-1,j+1]
-            Mu = cost[i-1,j]
-            M[j, :] = [Cl + Ml, Cu + Mu, Cr + Mr]
-            cost[i,j] = np.min(M[j,:]) + energy[i, j]
-        paths[i] = np.argmin(M,axis = 1) - 1
+        M1 = np.insert(image[i,:W-1],0,0,axis = 0)  # M1 = [0, I(i,0), I(i,1),.., I(i,W-2) ] array size:W*1
+        M2 = image[i-1]                             # M2 = [I(i-1,0), I(i-1,1),..., I(i-1,W-1)] array size:W*1
+        M3 = np.insert(image[i,1:W],W-1,0,axis = 0) # M3 = [I(i,1), I(i,2),.., I(i,W-1), 0] array size:W*1
+        # Calculate Cu
+        # Cu = [0, |I(i,0) - I(i,2)|, |I(i,1) - I(i,3)|,...,|I(i,W-3) - I(i,W-1)|, 0] 
+        Cu = abs(M3 - M1) 
+        # the first row and last row dont care
+        Cu[0] = 0
+        Cu[-1] = 0
+
+        # Calculate CL
+        # CL = [0, 
+        #       |I(i,0) - I(i,2)|        + |I(i-1,1) - I(i,0)|, 
+        #       |I(i,1) - I(i,3)|        + |I(i-1,2) - I(i,1)|,...,
+        #       |I(i-1,W-2) - I(i,W-1)|]
+        Cl = Cu + abs(M2 - M1) 
+        # the first row dont care
+        Cl[0] = 0
+        
+        # Calculate CR
+        # CR = [0                        + |I(i-1,0) - I(i,1)|, 
+        #       |I(i,0) - I(i,2)|        + |I(i-1,1) - I(i,2)|, 
+        #       |I(i,1) - I(i,3)|        + |I(i-1,2) - I(i,3)|,...,
+        #       |I(i,W-4) - I(i,W-2)|    + |I(i-1,W-2) - I(i,W-2)|,
+        #       0]
+        Cr = Cu + abs(M2 - M3) 
+        # the last row dont care
+        Cr[-1] = 0
+
+        c1 = np.insert(cost[i-1,:W-1],0,1e10,axis = 0)
+        c2 = cost[i-1]
+        c3 = np.insert(cost[i-1,1:W],W-1,1e10,axis = 0) 
+        
+        M = np.c_[Cl+c1, Cu+c2, Cr+c3]
+
+        cost[i] = energy[i]+np.min(M,axis = 1)
+        paths[i] = np.argmin(M,axis = 1) - 1 # In y-axis find the minimum index
+
+    # Two for-loop version
+    # for i in range(1,H):
+    #     M = np.zeros((W,3))
+    #     for j in range(0,W):
+    #         Cu =  Cr = Cl = Ml = Mu = Mr = 0
+    #         if j==0:
+    #             Ml = 1e10
+    #             Mr = cost[i-1,j+1]
+    #             Cr = np.abs(image[i-1, j] - image[i, j+1]) + Cu
+    #         elif j==(W-1):
+    #             Ml = cost[i-1,j-1]
+    #             Mr = 1e10
+    #             Cl = np.abs(image[i-1, j] - image[i, j-1]) + Cu
+    #         else:
+    #             Cu = np.abs(image[i, j+1] - image[i, j-1])
+    #             Cr = np.abs(image[i-1, j] - image[i, j+1]) + Cu
+    #             Cl = np.abs(image[i-1, j] - image[i, j-1]) + Cu
+    #             Ml = cost[i-1,j-1]
+    #             Mr = cost[i-1,j+1]
+    #         Mu = cost[i-1,j]
+    #         M[j, :] = [Cl + Ml, Cu + Mu, Cr + Mr]
+    #         cost[i,j] = np.min(M[j,:]) + energy[i, j]
+    #     paths[i] = np.argmin(M,axis = 1) - 1
     ### END YOUR CODE
 
     # Check that paths only contains -1, 0 or 1
@@ -597,6 +601,19 @@ def remove_object(image, mask):
     out = np.copy(image)
 
     ### YOUR CODE HERE
+    # process remove seam until remove all mask region 
+    while len(np.where(mask[:, :]>0)[0])>0:
+        energy = energy_function(out)
+        # highlight mask region
+        energy[np.where(mask[:, :] > 0)] *= -1000
+        cost, paths = compute_cost(out, energy)
+        end = np.argmin(cost[-1])
+        seam = backtrack_seam(paths, end)
+        out = remove_seam(out, seam)
+        mask = remove_seam(mask, seam)
+
+    # enlarge to original size
+    out = enlarge(out, W)
     pass
     ### END YOUR CODE
 

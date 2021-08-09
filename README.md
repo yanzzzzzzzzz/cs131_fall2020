@@ -45,9 +45,20 @@ follow this [website](http://vision.stanford.edu/teaching/cs131_fall2021/assignm
 
 ![](/result/hw4.png)
 # Homework #5 : Seam carving
+* Image Reducing And Enlarging
+* Improved Seam Carving Using Forward Energy
+* Object Removal
 
+![](/result/hw5.png)
 # Homework #6 : Object detection
+* Face Detection
+    * Hog Feature
+    * Image Pyramids
+* Deformable Parts Detection
+* K-Nearest Neighbors Classification
+* Cross Validation Choose Parameter K
 
+![](/result/hw6.png)
 # Homework #7 : Tracking - optical flow
 
 # Homework #8 : Camera Models
