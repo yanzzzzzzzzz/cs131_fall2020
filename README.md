@@ -5,7 +5,7 @@ This repository contains the released assignments for the fall 2020 iteration of
 
 follow this [website](http://vision.stanford.edu/teaching/cs131_fall2021/assignments.html) to install requirements.
 
-
+### [Class Note In Chinese](https://yanzzzzzzzzz.github.io/tags/cs131/)
 
 # Homework #0 : Basics (Done)
 * Basic linear algebra
